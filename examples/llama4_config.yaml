@@ -5,9 +5,9 @@ data:
   answer_key: answer
   max_prompt_length: 2048
   max_response_length: 2048
-  rollout_batch_size: 256  # Reduced for MoE model memory requirements
+  rollout_batch_size: 16  # Reduced for MoE model memory requirements
   mini_rollout_batch_size: null
-  val_batch_size: 512
+  val_batch_size: 8
   format_prompt: ./examples/format_prompt/math.jinja
   override_chat_template: null
   shuffle: true
@@ -27,9 +27,9 @@ algorithm:
 
 worker:
   actor:
-    global_batch_size: 64  # Optimized for Llama4 MoE memory usage
-    micro_batch_size_per_device_for_update: 2  # Conservative for 17B active params
-    micro_batch_size_per_device_for_experience: 4
+    global_batch_size: 16  # Optimized for Llama4 MoE memory usage
+    micro_batch_size_per_device_for_update: 1  # Conservative for 17B active params
+    micro_batch_size_per_device_for_experience: 1
     max_grad_norm: 1.0
     padding_free: true
     dynamic_batching: true
@@ -46,7 +46,7 @@ worker:
       lr_warmup_ratio: 0.1  # Longer warmup for MoE stability
     fsdp:
       enable_full_shard: true
-      enable_cpu_offload: false
+      enable_cpu_offload: true
       enable_rank0_init: true
     offload:
       offload_params: true  # Important for MoE models
