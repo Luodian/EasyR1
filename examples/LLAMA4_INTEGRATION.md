@@ -31,10 +31,6 @@ Updated the script to use:
 ### 3. Configuration (`examples/llama4_config.yaml`)
 Created MoE-optimized configuration with:
 - Reduced batch sizes for memory efficiency
-- Lower learning rate (5e-7) for large model stability
-- Longer warmup ratio (0.1) for MoE training stability
-- Conservative GPU memory utilization (0.5)
-- Parameter and optimizer offloading enabled
 
 ## Usage
 
@@ -60,77 +56,3 @@ python3 -m verl.trainer.main \
 cd /opt/tiger/EasyR1
 python examples/test_llama4_load.py
 ```
-
-## Architecture Considerations
-
-### Mixture-of-Experts (MoE)
-- Llama4 uses MoE architecture with sparse activation
-- Only 17B parameters active during forward pass
-- Requires careful memory management and batch size tuning
-
-### Memory Requirements
-- Recommended: 8x H100 GPUs (80GB each)
-- Minimum: 4x H100 GPUs with parameter offloading
-- Uses FSDP for model sharding across GPUs
-
-### Performance Optimizations
-- Flash Attention 2 support
-- Gradient checkpointing enabled
-- Parameter and optimizer offloading
-- Dynamic batching for efficient training
-
-## Configuration Parameters
-
-Key parameters optimized for Llama4:
-
-```yaml
-worker:
-  actor:
-    global_batch_size: 64              # Reduced for MoE memory
-    micro_batch_size_per_device_for_update: 2  # Conservative for 17B active
-    model:
-      enable_gradient_checkpointing: true
-    optim:
-      lr: 5.0e-7                       # Lower LR for stability
-      lr_warmup_ratio: 0.1             # Longer warmup
-    offload:
-      offload_params: true             # Important for MoE
-      offload_optimizer: true
-  rollout:
-    gpu_memory_utilization: 0.5        # Conservative for MoE
-    tensor_parallel_size: 2            # TP for inference
-```
-
-## Known Limitations
-
-1. **Model Availability**: Requires HuggingFace Transformers >= 4.51.0
-2. **Memory Requirements**: Large memory footprint due to MoE architecture
-3. **License**: Custom Llama 4 Community License (check Meta's terms)
-
-## Troubleshooting
-
-### OOM Errors
-- Reduce `global_batch_size` to 32 or 16
-- Increase `tensor_parallel_size` to 4 or 8
-- Enable CPU offloading: `enable_cpu_offload: true`
-
-### Slow Training
-- Increase `micro_batch_size_per_device_for_update` if memory allows
-- Disable gradient checkpointing for speed (at cost of memory)
-- Reduce sequence length if possible
-
-### Model Loading Issues
-- Ensure transformers version >= 4.51.0
-- Check HuggingFace authentication for gated models
-- Verify sufficient disk space for model download
-
-## Integration Details
-
-The integration works by:
-
-1. **Automatic Model Detection**: EasyR1 uses `AutoModelForCausalLM.from_pretrained()` which automatically detects Llama4 models
-2. **Native Transformers Support**: Leverages HuggingFace's built-in Llama4ForCausalLM class
-3. **Monkey Patching**: Applies Ulysses sequence parallelism optimizations
-4. **FSDP Integration**: Uses PyTorch FSDP for distributed training
-
-No changes to core EasyR1 logic were needed - the integration works through configuration and monkey patching.
