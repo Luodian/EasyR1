@@ -7,6 +7,9 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys
 import os
+import requests
+from PIL import Image
+from transformers import MllamaForConditionalGeneration, AutoProcessor
 
 # Add the verl path from the verl directory
 sys.path.insert(0, '/opt/tiger/verl')
@@ -67,5 +70,11 @@ def test_llama32_loading():
     print("No additional integration needed for basic support.")
     print("=" * 60)
 
+def test_llama32_processor():
+    breakpoint()
+    model_id = "meta-llama/Llama-3.2-11B-Vision-Instruct"
+    model = MllamaForConditionalGeneration.from_pretrained(model_id, torch_dtype=torch.bfloat16, device_map="auto")
+    processor = AutoProcessor.from_pretrained(model_id)
+
 if __name__ == "__main__":
-    test_llama32_loading()
+    test_llama32_processor()

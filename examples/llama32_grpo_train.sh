@@ -14,7 +14,7 @@ set -x
 export PYTHONUNBUFFERED=1
 export VLLM_USE_TRITON_FLASH_ATTN=0
 # Model selection - choose between 1B and 3B variants
-MODEL_PATH=/opt/tiger/checkpoints/Llama-3.2-1B-Instruct
+MODEL_PATH=/opt/tiger/checkpoints/Llama-3.2-11B-Vision-Instruct
 # MODEL_PATH=meta-llama/Llama-3.2-3B-Instruct
 
 python3 -m verl.trainer.main \

@@ -35,7 +35,7 @@ worker:
     dynamic_batching: true
     ulysses_size: 1
     model:
-      model_path: meta-llama/Llama-3.2-1B-Instruct  # Or 3B variant
+      model_path: meta-llama/Llama-3.2-11B-Vision-Instruct  # Or 3B variant
       enable_gradient_checkpointing: true
       trust_remote_code: false
       freeze_vision_tower: false
