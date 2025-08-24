@@ -1,6 +1,6 @@
 data:
-  train_files: russwang/LLaVA-Critic-GRPO-shortprompt@train
-  val_files: russwang/LLaVA-Critic-GRPO-shortprompt@val
+  train_files: hiyouga/geometry3k@train
+  val_files: hiyouga/geometry3k@test
   prompt_key: problem
   answer_key: answer
   max_prompt_length: 2048
