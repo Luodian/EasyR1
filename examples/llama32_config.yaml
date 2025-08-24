@@ -3,11 +3,11 @@ data:
   val_files: russwang/LLaVA-Critic-GRPO-shortprompt@val
   prompt_key: problem
   answer_key: answer
-  max_prompt_length: 2048
-  max_response_length: 2048
-  rollout_batch_size: 16  # Reduced for MoE model memory requirements
+  max_prompt_length: 1024  # Adjusted for smaller models
+  max_response_length: 1024  # Adjusted for smaller models
+  rollout_batch_size: 64  # Increased from 16 since smaller model
   mini_rollout_batch_size: null
-  val_batch_size: 8
+  val_batch_size: 32  # Increased from 8 since smaller model
   format_prompt: ./examples/format_prompt/math.jinja
   override_chat_template: null
   shuffle: true
@@ -27,40 +27,40 @@ algorithm:
 
 worker:
   actor:
-    global_batch_size: 16  # Optimized for Llama4 MoE memory usage
-    micro_batch_size_per_device_for_update: 1  # Conservative for 17B active params
-    micro_batch_size_per_device_for_experience: 1
+    global_batch_size: 64  # Increased for smaller model efficiency
+    micro_batch_size_per_device_for_update: 4  # Can be higher for 1B/3B models
+    micro_batch_size_per_device_for_experience: 4
     max_grad_norm: 1.0
     padding_free: true
     dynamic_batching: true
     ulysses_size: 1
     model:
-      model_path: meta-llama/Llama-4-Scout-17B-16E-Instruct
+      model_path: meta-llama/Llama-3.2-1B-Instruct  # Or 3B variant
       enable_gradient_checkpointing: true
       trust_remote_code: false
       freeze_vision_tower: false
     optim:
-      lr: 5.0e-7  # Lower LR for large MoE model
+      lr: 1.0e-6  # Conservative LR for smaller models
       weight_decay: 1.0e-2
       strategy: adamw
-      lr_warmup_ratio: 0.1  # Longer warmup for MoE stability
+      lr_warmup_ratio: 0.05  # Shorter warmup for smaller models
     fsdp:
       enable_full_shard: true
-      enable_cpu_offload: true
+      enable_cpu_offload: false  # Usually not needed for 1B/3B
       enable_rank0_init: true
     offload:
-      offload_params: true  # Important for MoE models
-      offload_optimizer: true
+      offload_params: false  # Not needed for smaller models
+      offload_optimizer: false
 
   rollout:
     n: 5
     temperature: 1.0
     top_p: 1.0
     limit_images: 0
-    gpu_memory_utilization: 0.5  # Conservative for MoE models
+    gpu_memory_utilization: 0.7  # Can use more memory for smaller models
     enforce_eager: false
     enable_chunked_prefill: false
-    tensor_parallel_size: 2
+    tensor_parallel_size: 1  # Usually 1 is enough for 1B/3B
     disable_tqdm: false
     val_override_config:
       temperature: 0.6
@@ -70,7 +70,7 @@ worker:
   ref:
     fsdp:
       enable_full_shard: true
-      enable_cpu_offload: true
+      enable_cpu_offload: false
       enable_rank0_init: true
     offload:
       offload_params: false
@@ -80,19 +80,19 @@ worker:
     reward_function: ./examples/reward_function/math.py:compute_score
 
 trainer:
-  total_epochs: 10  # Reduced epochs for large model
+  total_epochs: 20  # Can train longer with smaller models
   max_steps: null
   project_name: easy_r1
-  experiment_name: llama4_scout_17b_math_grpo
+  experiment_name: llama32_math_grpo
   logger: ["console", "wandb"]
   nnodes: 1
   n_gpus_per_node: 8
   max_try_make_batch: 20
-  val_freq: 5
+  val_freq: 10
   val_before_train: true
   val_only: false
   val_generations_to_log: 3
-  save_freq: 5
+  save_freq: 10
   save_limit: 3
   save_model_only: false
   save_checkpoint_path: null
