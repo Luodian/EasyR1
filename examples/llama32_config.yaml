@@ -86,7 +86,7 @@ trainer:
   experiment_name: llama32_math_grpo
   logger: ["console", "wandb"]
   nnodes: 1
-  n_gpus_per_node: 8
+  n_gpus_per_node: 1
   max_try_make_batch: 20
   val_freq: 10
   val_before_train: true
